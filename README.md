@@ -27,4 +27,20 @@ library components intended to be composed by an embedding application.
 
 ## Main packages
 
-`marine`, `cranes`, `yard`, `gate`, `customs`, `reefer`, `hazmat`, `equipment`, `rail`, `billing`, `transshipment`, `planning`, `persistence`, `reporting`, and `api`.
+`marine`, `cranes`, `yard`, `gate`, `customs`, `custody`, `reefer`, `hazmat`, `equipment`, `rail`, `billing`, `transshipment`, `planning`, `persistence`, `reporting`, and `api`.
+
+## Custody handover chain
+
+`custody` records the end-to-end chain of custody for a container as
+append-only handovers: discharge (`vessel -> quay`), yard entry
+(`quay -> yard`), customs disposition (`yard <-> customs`), yard moves
+(`yard -> yard`), and rail or gate departure (`yard -> rail|truck`).
+
+- every handover names the previous holder and must occur strictly later
+  than the previous one, otherwise it is rejected;
+- submissions carry a client `message_id`; a message replayed after an
+  offline outage is accepted but applied at most once, and a replay whose
+  payload changed is a conflict;
+- a final departure state cannot be written while discharge, yard entry,
+  or the customs release are missing; seizures and departures seal the
+  chain.
